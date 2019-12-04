@@ -108,19 +108,18 @@ var inputs = [...]float64{
 	53428,
 }
 
-// Fuel required to launch a given module is based on its mass.
-// Specifically, to find the fuel required for a module, take
-// its mass, divide by three, round down, and subtract 2.
-//
-// f = floor(m / 3) - 2
-func calculateFuel(mass float64) float64 {
-	return math.Floor(mass/3) - 2
+func calculateFuelRequirement(mass float64) float64 {
+	var fuelFromMass float64 = math.Floor(mass/3) - 2
+	if fuelFromMass <= 0 {
+		return 0
+	}
+	return fuelFromMass + calculateFuelRequirement(fuelFromMass)
 }
 
 func main() {
-	var runningSum float64 = 0
-	for _, num := range inputs {
-		runningSum += calculateFuel(num)
+	var totalFuel float64 = 0
+	for _, mass := range inputs {
+		totalFuel += calculateFuelRequirement(mass)
 	}
-	fmt.Printf("%f\n", runningSum)
+	fmt.Printf("%f\n", totalFuel)
 }

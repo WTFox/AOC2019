@@ -9,12 +9,12 @@ func TestCalculateFuel(t *testing.T) {
 	}{
 		{12, 2},
 		{14, 2},
-		{1969, 654},
-		{100756, 33583},
+		{1969, 966},
+		{100756, 50346},
 	}
 
 	for _, tt := range fuelTests {
-		got := calculateFuel(tt.mass)
+		got := calculateFuelRequirement(tt.mass)
 		if got != tt.fuel {
 			t.Errorf("got %g want %g", got, tt.fuel)
 		}
