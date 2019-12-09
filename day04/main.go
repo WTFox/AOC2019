@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
 var testInputLow = 254032
 var testInputHigh = 789860
-
-// 1033
 
 /*
 However, they do remember a few key facts about the password:
@@ -21,9 +20,12 @@ However, they do remember a few key facts about the password:
 
 Other than the range rule, the following are true:
 
-    - 111111 meets these criteria (double 11, never decreases).
     - 223450 does not meet these criteria (decreasing pair of digits 50).
 	- 123789 does not meet these criteria (no double).
+    - 112233 meets these criteria because the digits never decrease and all repeated digits are exactly two digits long.
+    - 123444 doesn't meet the criteria (the repeated 44 is part of a larger group of 444).
+    - 111122 meets the criteria (even though 1 is repeated more than twice, it still contains a double 22).
+
 
 How many different passwords within the range given in your puzzle input meet these criteria?
 */
@@ -39,31 +41,41 @@ func convertNumberToSlice(num int) []int {
 }
 
 func hasAdjacentPair(nums []int) bool {
-	result := false
+	mapCount := make(map[int][]int) // val:count
 	for idx, val := range nums {
-		if idx == len(nums)-1 {
-			return result
-		}
-		if val == nums[idx+1] {
-			result = true
-			break
+		mapCount[val] = append(mapCount[val], idx)
+	}
+	for _, v := range mapCount {
+		if len(v) == 2 {
+			left := float64(v[0])
+			right := float64(v[1])
+			if math.Max(left, right)-math.Min(left, right) == 1 {
+				return true
+			}
 		}
 	}
-	return result
+	return false
 }
 
-func getCombinations(low, high int) (combinations int) {
-	for i := testInputLow; i <= testInputHigh; i++ {
-		nums := convertNumberToSlice(int(i))
-		if !sort.IntsAreSorted(nums) {
-			continue
-		}
-		if !hasAdjacentPair(nums) {
-			continue
-		}
-		combinations++
+func validateNumber(num int) bool {
+	nums := convertNumberToSlice(num)
+	if !hasAdjacentPair(nums) {
+		return false
 	}
-	return
+	if !sort.IntsAreSorted(nums) {
+		return false
+	}
+	return true
+}
+
+func getCombinations(low, high int) int {
+	combinations := 0
+	for i := low; i <= high; i++ {
+		if validateNumber(i) {
+			combinations++
+		}
+	}
+	return combinations
 }
 
 func main() {
