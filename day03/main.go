@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+// CENTER represents the center (duh)
+var CENTER Coordinate = Coordinate{0, 0}
+
 // CoordinateWireMap keeps track of which wires are over what coordindates
 type CoordinateWireMap map[Coordinate][]int
 
@@ -103,7 +106,7 @@ func findDistanceToClosestIntersection(intersectedCoordinates Coordinates) int {
 	return int(closestDistance)
 }
 
-func processInstructionSet(instructions []string) int {
+func buildCoordinateWireMap(instructions []string) CoordinateWireMap {
 	coordinateWireMap := make(CoordinateWireMap)
 	for wireIndex, wire := range instructions {
 		wire = strings.TrimSpace(wire)
@@ -123,14 +126,54 @@ func processInstructionSet(instructions []string) int {
 			}
 		}
 	}
+	return coordinateWireMap
+}
 
-	intersectedCoordinates := findIntersections(coordinateWireMap)
-	return findDistanceToClosestIntersection(intersectedCoordinates)
+func dayThreePartOne(testInputs []string) {
+	wireMapping := buildCoordinateWireMap(testInputs)
+	intersectedCoordinates := findIntersections(wireMapping)
+	lowestDistance := findDistanceToClosestIntersection(intersectedCoordinates)
+	fmt.Println(lowestDistance)
+}
+
+func countStepsToIntersection(wire string, intersectedCoordinate Coordinate) int {
+	position := CENTER
+	steps := 0
+	for _, input := range strings.Split(wire, ",") {
+		stepsToDestination := position.travel(Instruction{input}.convertToCoordinate())
+		for _, nextPosition := range stepsToDestination {
+			if position.x == intersectedCoordinate.x && position.y == intersectedCoordinate.y {
+				return steps
+			}
+			position = nextPosition
+			steps++
+		}
+	}
+	return steps
+}
+
+func dayThreePartTwo(testInputs []string) {
+	wireMapping := buildCoordinateWireMap(testInputs)
+	intersectedCoordinates := findIntersections(wireMapping)
+
+	lowestNumber := math.Inf(0)
+	for _, intersectedCoordinate := range intersectedCoordinates {
+		wireOneStepCount := countStepsToIntersection(testInputs[0], intersectedCoordinate)
+		wireTwoStepCount := countStepsToIntersection(testInputs[1], intersectedCoordinate)
+		result := float64(wireOneStepCount + wireTwoStepCount)
+
+		if result < lowestNumber {
+			lowestNumber = result
+		}
+	}
+	fmt.Println(lowestNumber)
+
 }
 
 func main() {
 	inputBytes, _ := ioutil.ReadFile("input.txt")
 	testInputs := strings.Split(string(inputBytes), "\n")
-	lowestDistance := processInstructionSet(testInputs)
-	fmt.Println(lowestDistance)
+
+	dayThreePartOne(testInputs)
+	dayThreePartTwo(testInputs)
 }
